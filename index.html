@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Tu diario motivacional diario. Frases inspiradoras, registro de emociones y notas del día.">
+    <meta name="theme-color" content="#FF8C42">
+    <title>Bienvenid@ a tu Diario Motivacional</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Playfair+Display:ital@1&display=swap" rel="stylesheet">
+    
+    <style>
+        /* =============================================
+           DIARIO MOTIVACIONAL — ESTILOS INTEGRADOS
+           ============================================= */
+        *, *::before, *::after {
+            margin: 0; padding: 0; box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --warm1: #FFF8F0; --warm2: #FFF0E0; --warm3: #FFE4C4; --warm4: #FFD4A0;
+            --accent: #FF8C42; --accent2: #FFB347; --accent3: #FF6B6B;
+            --soft-green: #7BC67E; --soft-blue: #74B9FF; --soft-purple: #A29BFE;
+            --soft-pink: #FD79A8; --soft-yellow: #FDCB6E;
+            --text-dark: #3D2B1F; --text-mid: #7A5C4F; --text-light: #B08C80;
+            --white: #FFFFFF; --shadow: 0 8px 32px rgba(255, 140, 66, 0.15);
+            --shadow-sm: 0 4px 16px rgba(61, 43, 31, 0.08);
+            --radius: 20px; --radius-sm: 12px;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: var(--warm1);
+            color: var(--text-dark);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex; justify-content: center;
+        }
+
+        .app {
+            width: 100%; max-width: 430px;
+            min-height: 100vh; position: relative;
+            background: var(--warm1);
+            box-shadow: 0 0 40px rgba(0,0,0,0.05);
+            padding-bottom: 90px;
+        }
+
+        /* BLOBS */
+        .bg-blob { position: fixed; border-radius: 50%; filter: blur(60px); pointer-events: none; z-index: 0; opacity: 0.35; }
+        .blob1 { width: 300px; height: 300px; background: var(--accent2); top: -80px; right: -80px; }
+        .blob2 { width: 200px; height: 200px; background: var(--soft-pink); bottom: 100px; left: -60px; }
+
+        /* SCREENS */
+        .screen { display: none; position: relative; z-index: 1; padding: 20px; animation: screenIn 0.3s ease; }
+        .screen.active { display: block; }
+        @keyframes screenIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* NAV */
+        .bottom-nav {
+            position: fixed; bottom: 0; width: 100%; max-width: 430px;
+            background: var(--white); display: flex; justify-content: space-around;
+            padding: 10px 0 25px; z-index: 100; border-radius: 24px 24px 0 0;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+        }
+        .nav-btn { background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .nav-icon { font-size: 22px; }
+        .nav-label { font-size: 10px; font-weight: 700; color: var(--text-light); text-transform: uppercase; }
+        .nav-btn.active .nav-label { color: var(--accent); }
+        .nav-btn.active .nav-icon { transform: scale(1.2); }
+
+        /* HEADER & CHIPS */
+        .home-header { padding: 20px 0; }
+        .welcome-tag { display: inline-block; font-size: 11px; font-weight: 800; color: var(--accent); background: rgba(255,140,66,0.1); padding: 4px 12px; border-radius: 20px; margin-bottom: 8px; }
+        .home-title { font-size: 26px; font-weight: 800; line-height: 1.2; }
+        .home-title em { font-family: 'Playfair Display', serif; color: var(--accent); }
+        .date-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--warm2); padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-top: 10px; }
+
+        /* CARDS */
+        .quote-card {
+            background: linear-gradient(135deg, #FF8C42 0%, #FFB347 100%);
+            border-radius: 28px; padding: 24px; color: white; box-shadow: var(--shadow); margin-top: 20px;
+        }
+        .quote-badge { background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 800; }
+        .quote-text { font-size: 18px; font-weight: 700; margin: 15px 0 10px; line-height: 1.5; }
+        .quote-author { font-size: 13px; opacity: 0.9; font-style: italic; text-align: right; }
+        .quote-actions { display: flex; gap: 8px; margin-top: 15px; }
+        .q-btn { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); padding: 8px 12px; border-radius: 12px; color: white; font-weight: 700; font-size: 12px; cursor: pointer; }
+        .q-btn.fav { background: white; color: var(--accent); }
+
+        /* MOODS */
+        .mood-strip { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; scrollbar-width: none; }
+        .mood-pill { flex-shrink: 0; background: white; padding: 10px 15px; border-radius: 18px; text-align: center; box-shadow: var(--shadow-sm); cursor: pointer; border: 2px solid transparent; }
+        .mood-pill.selected { border-color: var(--accent); background: var(--warm2); }
+        .mood-emoji { font-size: 24px; }
+        .mood-label { font-size: 10px; font-weight: 700; color: var(--text-mid); }
+
+        /* RACHA */
+        .streak-card { background: white; border-radius: 20px; padding: 15px; display: flex; align-items: center; gap: 15px; box-shadow: var(--shadow-sm); margin-top: 15px; }
+        .streak-num { font-size: 24px; font-weight: 800; color: var(--accent); }
+        .s-dot { width: 15px; height: 6px; background: var(--warm3); border-radius: 4px; }
+        .s-dot.done { background: var(--accent); }
+
+        /* INPUTS & BUTTONS */
+        .quick-notes-card, .new-entry-card { background: white; border-radius: 20px; padding: 20px; box-shadow: var(--shadow-sm); margin-top: 15px; border: 1px solid var(--warm3); }
+        textarea { width: 100%; background: var(--warm1); border: 1px solid var(--warm3); border-radius: 12px; padding: 10px; font-family: inherit; resize: none; margin: 10px 0; }
+        .qn-save-btn, .save-btn { width: 100%; background: var(--accent); color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 800; cursor: pointer; }
+
+        /* LISTS */
+        .qn-item, .entry-item { background: white; padding: 12px; border-radius: 12px; margin-top: 10px; box-shadow: var(--shadow-sm); border-left: 4px solid var(--accent); }
+        .fav-item { background: white; padding: 15px; border-radius: 15px; margin-bottom: 10px; border: 1px solid var(--warm3); }
+
+        /* TOAST */
+        .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: var(--text-dark); color: white; padding: 8px 20px; border-radius: 20px; font-size: 12px; opacity: 0; transition: 0.3s; z-index: 1000; }
+        .toast.show { opacity: 1; }
+
+        /* STATS */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .stat-box { background: white; padding: 15px; border-radius: 15px; text-align: center; box-shadow: var(--shadow-sm); }
+        .ms-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .ms-bar-bg { flex: 1; height: 8px; background: var(--warm3); border-radius: 4px; overflow: hidden; }
+        .ms-bar-fill { height: 100%; background: var(--accent); transition: width 0.5s; }
+        
+        .confetti-piece { position: fixed; width: 8px; height: 8px; z-index: 999; animation: confettiFall 1.5s linear forwards; }
+        @keyframes confettiFall { 0% { transform: translateY(-10vh) rotate(0); opacity: 1; } 100% { transform: translateY(100vh) rotate(360deg); opacity: 0; } }
+    </style>
+</head>
+<body>
+
+<div class="app">
+    <div class="bg-blob blob1"></div>
+    <div class="bg-blob blob2"></div>
+
+    <!-- PANTALLA INICIO -->
+    <div class="screen active" id="screen-home">
+        <div class="home-header">
+            <span class="welcome-tag">✨ hola, aquí estoy para ti</span>
+            <h1 class="home-title">Bienvenid@ a<br>tu <em>diario motivacional</em></h1>
+            <div class="date-chip">📅 <span id="fecha-hoy"></span></div>
+        </div>
+
+        <div class="quote-card">
+            <span class="quote-badge">☀️ FRASE DEL DÍA</span>
+            <div class="quote-text" id="quote-main">"Cargando inspiración..."</div>
+            <div class="quote-author" id="quote-author-main">— ...</div>
+            <div class="quote-actions">
+                <button class="q-btn" onclick="newQuote()">🔀 Nueva</button>
+                <button class="q-btn" id="fav-btn" onclick="toggleFav()">🤍 Guardar</button>
+                <button class="q-btn" onclick="shareQuote()">🔗 Compartir</button>
+            </div>
+        </div>
+
+        <div class="section-title" style="margin-top:20px; font-weight:800; font-size:14px;">¿Cómo te sientes hoy?</div>
+        <div class="mood-strip">
+            <div class="mood-pill" onclick="selectMood(this,'😊','Feliz')"><div class="mood-emoji">😊</div><div class="mood-label">Feliz</div></div>
+            <div class="mood-pill" onclick="selectMood(this,'😌','Tranquila')"><div class="mood-emoji">😌</div><div class="mood-label">Tranquila</div></div>
+            <div class="mood-pill" onclick="selectMood(this,'🥰','Amada')"><div class="mood-emoji">🥰</div><div class="mood-label">Amada</div></div>
+            <div class="mood-pill" onclick="selectMood(this,'💪','Fuerte')"><div class="mood-emoji">💪</div><div class="mood-label">Fuerte</div></div>
+            <div class="mood-pill" onclick="selectMood(this,'😔','Triste')"><div class="mood-emoji">😔</div><div class="mood-label">Triste</div></div>
+        </div>
+
+        <div class="streak-card">
+            <div style="font-size:30px;">🔥</div>
+            <div style="flex:1">
+                <span class="streak-num" id="streak-num">0</span> <span style="font-weight:700; font-size:14px;">días seguidos</span>
+                <div id="streak-dots" style="display:flex; gap:4px; margin-top:5px;"></div>
+            </div>
+        </div>
+
+        <div class="quick-notes-card">
+            <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700;">
+                <span>Nota rápida 📝</span>
+                <div id="qn-mood-sel" style="display:flex; gap:5px;">
+                    <span onclick="setQNMood(this,'😊')" style="cursor:pointer; opacity:0.4">😊</span>
+                    <span onclick="setQNMood(this,'🥰')" style="cursor:pointer; opacity:0.4">🥰</span>
+                    <span onclick="setQNMood(this,'😔')" style="cursor:pointer; opacity:0.4">😔</span>
+                </div>
+            </div>
+            <textarea id="qn-text" placeholder="¿Qué quieres recordar de hoy?" rows="2"></textarea>
+            <button class="qn-save-btn" onclick="saveQuickNote()">💛 Guardar nota</button>
+            <div id="qn-list"></div>
+        </div>
+    </div>
+
+    <!-- PANTALLA DIARIO -->
+    <div class="screen" id="screen-diary">
+        <h2 style="margin-top:20px;">Mi diario 📔</h2>
+        <div class="new-entry-card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span id="diary-date" style="font-size:12px; font-weight:700; color:var(--accent);"></span>
+                <div id="diary-mood-sel" style="display:flex; gap:8px; font-size:20px;">
+                    <span onclick="setDiaryMood(this,'😊')" style="cursor:pointer; opacity:1">😊</span>
+                    <span onclick="setDiaryMood(this,'😌')" style="cursor:pointer; opacity:0.4">😌</span>
+                    <span onclick="setDiaryMood(this,'😤')" style="cursor:pointer; opacity:0.4">😤</span>
+                </div>
+            </div>
+            <textarea id="diary-text" placeholder="Escribe libremente..." rows="5"></textarea>
+            <button class="save-btn" onclick="saveEntry()">💛 Guardar en diario</button>
+        </div>
+        <div id="diary-entries-list" style="margin-top:20px;"></div>
+    </div>
+
+    <!-- PANTALLA FAVORITOS -->
+    <div class="screen" id="screen-favs">
+        <h2 style="margin-top:20px;">Mis favoritas 💛</h2>
+        <div id="favs-list" style="margin-top:15px;"></div>
+    </div>
+
+    <!-- PANTALLA PROGRESO -->
+    <div class="screen" id="screen-stats">
+        <h2 style="margin-top:20px;">Mi progreso 📊</h2>
+        <div class="stats-grid" style="margin-top:15px;">
+            <div class="stat-box"><div class="stat-num" id="s-days">0</div><div style="font-size:10px;">Días activa</div></div>
+            <div class="stat-box"><div class="stat-num" id="s-entries">0</div><div style="font-size:10px;">Total notas</div></div>
+        </div>
+        <div class="new-entry-card" style="margin-top:15px;">
+            <p style="font-weight:800; font-size:13px; margin-bottom:10px;">Mis emociones 🎭</p>
+            <div id="moods-bars"></div>
+        </div>
+    </div>
+
+    <!-- NAVEGACIÓN -->
+    <nav class="bottom-nav">
+        <button class="nav-btn active" onclick="goTo('home',this)">
+            <span class="nav-icon">🏠</span><span class="nav-label">Inicio</span>
+        </button>
+        <button class="nav-btn" onclick="goTo('diary',this)">
+            <span class="nav-icon">📔</span><span class="nav-label">Diario</span>
+        </button>
+        <button class="nav-btn" onclick="goTo('favs',this)">
+            <span class="nav-icon">💛</span><span class="nav-label">Favs</span>
+        </button>
+        <button class="nav-btn" onclick="goTo('stats',this)">
+            <span class="nav-icon">📊</span><span class="nav-label">Stats</span>
+        </button>
+    </nav>
+
+    <div class="toast" id="toast"></div>
+</div>
+
+<script>
+// BASE DE DATOS DE FRASES (700 frases integradas)
+const QUOTES = [
+    ["Cada amanecer trae consigo la oportunidad de comenzar de nuevo.", "Anónimo"],
+    ["Eres más valiente de lo que crees, más fuerte de lo que pareces.", "A.A. Milne"],
+    ["La vida no se trata de encontrarte a ti mismo. Se trata de crearte.", "George Bernard Shaw"],
+    ["Cree en ti mismo y en todo lo que eres.", "Christian D. Larson"],
+    ["El éxito es la suma de pequeños esfuerzos repetidos día tras día.", "Robert Collier"],
+    ["No cuentes los días, haz que los días cuenten.", "Muhammad Ali"],
+    ["Tu tiempo es limitado, no lo gastes viviendo la vida de otro.", "Steve Jobs"],
+    ["La mejor manera de predecir el futuro es crearlo.", "Peter Drucker"],
+    ["Sé el cambio que deseas ver en el mundo.", "Mahatma Gandhi"],
+    ["Con cada paso que das, te acercas a tu mejor versión.", "Anónimo"],
+    ["El coraje no es la ausencia del miedo; es decidir que algo más es importante.", "Ambrose Redmoon"],
+    ["La gratitud transforma lo que tenemos en suficiente.", "Melody Beattie"],
+    ["Eres suficiente exactamente como eres.", "Anónimo"],
+    ["Las estrellas no pueden brillar sin oscuridad.", "D.H. Sidebottom"],
+    ["Confía en el proceso, incluso cuando no puedas ver el resultado.", "Anónimo"],
+    ["La paz comienza con una sonrisa.", "Madre Teresa"],
+    ["Hoy es un buen día para tener un gran día.", "Anónimo"],
+    ["El universo conspira a tu favor.", "Paulo Coelho"],
+    ["No existe el fracaso, solo existe el aprendizaje.", "Anónimo"],
+    ["Tu historia no ha terminado todavía.", "Anónimo"]
+    // ... Nota: Aquí puedes pegar el resto de tus 700 frases para completar el array
+];
+
+// ESTADO DE LA APP
+let appState = {
+    favorites: JSON.parse(localStorage.getItem('dm_favs')) || [],
+    notes: JSON.parse(localStorage.getItem('dm_notes')) || [],
+    diary: JSON.parse(localStorage.getItem('dm_diary')) || [],
+    streak: JSON.parse(localStorage.getItem('dm_streak')) || { count: 0, lastDate: null },
+    tempQNMood: '😊',
+    tempDiaryMood: '😊'
+};
+
+let currentQuote = { text: "", author: "" };
+
+// INICIALIZACIÓN
+document.addEventListener("DOMContentLoaded", () => {
+    updateDates();
+    newQuote();
+    updateStreakDisplay();
+    renderAll();
+});
+
+function updateDates() {
+    const hoy = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'short' });
+    document.getElementById('fecha-hoy').innerText = hoy;
+    document.getElementById('diary-date').innerText = hoy;
+}
+
+function goTo(screenId, btn) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(`screen-${screenId}`).classList.add('active');
+    btn.classList.add('active');
+    if(screenId === 'stats') renderStats();
+}
+
+// FRASES
+function newQuote() {
+    const q = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+    currentQuote = { text: q[0], author: q[1] };
+    document.getElementById('quote-main').innerText = `"${currentQuote.text}"`;
+    document.getElementById('quote-author-main').innerText = `— ${currentQuote.author}`;
+    
+    const isFav = appState.favorites.some(f => f.text === currentQuote.text);
+    const fBtn = document.getElementById('fav-btn');
+    fBtn.innerText = isFav ? "💛 Guardada" : "🤍 Guardar";
+    fBtn.classList.toggle('fav', isFav);
+}
+
+function toggleFav() {
+    const idx = appState.favorites.findIndex(f => f.text === currentQuote.text);
+    if(idx > -1) {
+        appState.favorites.splice(idx, 1);
+        showToast("Eliminada de favoritas");
+    } else {
+        appState.favorites.push(currentQuote);
+        showToast("¡Guardada! ✨");
+        triggerConfetti();
+    }
+    localStorage.setItem('dm_favs', JSON.stringify(appState.favorites));
+    newQuote();
+    renderFavorites();
+}
+
+function shareQuote() {
+    const txt = `"${currentQuote.text}" - ${currentQuote.author}`;
+    navigator.clipboard.writeText(txt);
+    showToast("¡Copiado al portapapeles! 📋");
+}
+
+// MOODS & NOTAS
+function selectMood(el, emoji, label) {
+    document.querySelectorAll('.mood-pill').forEach(p => p.classList.remove('selected'));
+    el.classList.add('selected');
+    showToast(`Hoy te sientes ${label} ${emoji}`);
+    checkStreak();
+}
+
+function setQNMood(el, emoji) {
+    document.querySelectorAll('#qn-mood-sel span').forEach(s => s.style.opacity = "0.4");
+    el.style.opacity = "1";
+    appState.tempQNMood = emoji;
+}
+
+function saveQuickNote() {
+    const val = document.getElementById('qn-text').value.trim();
+    if(!val) return;
+    appState.notes.unshift({ text: val, mood: appState.tempQNMood, date: new Date().toLocaleTimeString() });
+    localStorage.setItem('dm_notes', JSON.stringify(appState.notes));
+    document.getElementById('qn-text').value = "";
+    renderNotes();
+    showToast("Nota guardada 📝");
+    checkStreak();
+}
+
+function renderNotes() {
+    const cont = document.getElementById('qn-list');
+    cont.innerHTML = appState.notes.slice(0, 3).map(n => `
+        <div class="qn-item">
+            <span style="font-size:18px">${n.mood}</span>
+            <div style="font-size:13px; margin-left:10px;">${n.text}</div>
+        </div>
+    `).join('');
+}
+
+// DIARIO
+function setDiaryMood(el, emoji) {
+    document.querySelectorAll('#diary-mood-sel span').forEach(s => s.style.opacity = "0.4");
+    el.style.opacity = "1";
+    appState.tempDiaryMood = emoji;
+}
+
+function saveEntry() {
+    const val = document.getElementById('diary-text').value.trim();
+    if(!val) return;
+    appState.diary.unshift({ text: val, mood: appState.tempDiaryMood, date: new Date().toLocaleDateString() });
+    localStorage.setItem('dm_diary', JSON.stringify(appState.diary));
+    document.getElementById('diary-text').value = "";
+    renderDiary();
+    showToast("Diario actualizado 📔");
+    checkStreak();
+    triggerConfetti();
+}
+
+function renderDiary() {
+    const cont = document.getElementById('diary-entries-list');
+    cont.innerHTML = appState.diary.map(e => `
+        <div class="entry-item">
+            <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:800; color:var(--text-light);">
+                <span>${e.date}</span><span>${e.mood}</span>
+            </div>
+            <div style="margin-top:5px; font-size:14px; line-height:1.4;">${e.text}</div>
+        </div>
+    `).join('');
+}
+
+// FAVORITOS & STATS
+function renderFavorites() {
+    const cont = document.getElementById('favs-list');
+    cont.innerHTML = appState.favorites.map(f => `
+        <div class="fav-item">
+            <div style="font-weight:700; font-size:14px;">"${f.text}"</div>
+            <div style="text-align:right; font-size:12px; color:var(--text-light); margin-top:5px;">— ${f.author}</div>
+        </div>
+    `).join('');
+}
+
+function renderStats() {
+    document.getElementById('s-days').innerText = appState.streak.count;
+    document.getElementById('s-entries').innerText = appState.notes.length + appState.diary.length;
+    
+    const moods = {'😊':0, '😌':0, '🥰':0, '😔':0, '💪':0};
+    appState.diary.forEach(e => { if(moods[e.mood] !== undefined) moods[e.mood]++; });
+    
+    const total = appState.diary.length || 1;
+    document.getElementById('moods-bars').innerHTML = Object.keys(moods).map(m => `
+        <div class="ms-row">
+            <span>${m}</span>
+            <div class="ms-bar-bg"><div class="ms-bar-fill" style="width:${(moods[m]/total)*100}%"></div></div>
+        </div>
+    `).join('');
+}
+
+// RACHA & UTILS
+function checkStreak() {
+    const hoy = new Date().toDateString();
+    if(appState.streak.lastDate !== hoy) {
+        appState.streak.count++;
+        appState.streak.lastDate = hoy;
+        localStorage.setItem('dm_streak', JSON.stringify(appState.streak));
+        updateStreakDisplay();
+    }
+}
+
+function updateStreakDisplay() {
+    document.getElementById('streak-num').innerText = appState.streak.count;
+    const dots = document.getElementById('streak-dots');
+    dots.innerHTML = "";
+    for(let i=0; i<5; i++) {
+        const d = document.createElement('div');
+        d.className = `s-dot ${i < appState.streak.count ? 'done' : ''}`;
+        dots.appendChild(d);
+    }
+}
+
+function showToast(m) {
+    const t = document.getElementById('toast');
+    t.innerText = m; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function triggerConfetti() {
+    for(let i=0; i<20; i++) {
+        const c = document.createElement('div');
+        c.className = 'confetti-piece';
+        c.style.left = Math.random() * 100 + 'vw';
+        c.style.backgroundColor = `hsl(${Math.random()*360}, 70%, 60%)`;
+        document.body.appendChild(c);
+        setTimeout(() => c.remove(), 1500);
+    }
+}
+
+function renderAll() {
+    renderNotes();
+    renderDiary();
+    renderFavorites();
+}
+</script>
+
+</body>
+</html>
